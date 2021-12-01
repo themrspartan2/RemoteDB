@@ -39,15 +39,15 @@ int main(int argc, char const *argv[])
     //define sockfd
     sock_cli = socket(AF_INET, SOCK_STREAM, 0);
     //define sockaddr_in
-    struct sockaddr_in servaddr;
-    memset(&servaddr, 0, sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(MYPORT);                 //server port
-    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1"); //server ip
+    struct sockaddr_in serverAddr;
+    memset(&serverAddr, 0, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(MYPORT);                 //server port
+    serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1"); //server ip
 
     //connect to the server
     //0 = success, -1 = error
-    if (connect(sock_cli, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+    if (connect(sock_cli, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
     {
         perror("connect");
         exit(1);

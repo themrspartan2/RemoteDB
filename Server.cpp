@@ -21,18 +21,18 @@
 
 using namespace std;
 
-int s;
-struct sockaddr_in servaddr;
-socklen_t len;
-list<int> li;
+int id;
+struct sockaddr_in serverAddr;
+socklen_t length;
+list<int> activeConn;
 
 void getConnection()
 {
     while (1)
     {
-        int conn = accept(s, (struct sockaddr *)&servaddr, &len);
-        li.push_back(conn);
-        printf("%d\n", conn);
+        int newConn = accept(id, (struct sockaddr *)&serverAddr, &length);
+        activeConn.push_back(newConn);
+        printf("%d\n", newConn);
     }
 }
 
@@ -45,8 +45,10 @@ void getData()
 
     while (1)
     {
+        //For every connection that is stored, iterate over all of them
+        //Check each connection for a message
         list<int>::iterator it;
-        for (it = li.begin(); it != li.end(); ++it)
+        for (it = activeConn.begin(); it != activeConn.end(); ++it)
         {
             fd_set rfds;
             FD_ZERO(&rfds);
@@ -72,9 +74,9 @@ void getData()
                 char buf[BUFFER_SIZE];
                 memset(buf, 0, sizeof(buf));
                 int len = recv(*it, buf, sizeof(buf), 0);
+                
+                //This prints the client's message on the server terminal
                 printf("%s", buf);
-                //now send it to everyone but the sender
-                //send(*it, buf, sizeof(buf), 0);
             }
         }
         sleep(1);
@@ -88,7 +90,7 @@ void sendMess()
         char buf[BUFFER_SIZE];
         fgets(buf, sizeof(buf), stdin);
         list<int>::iterator it;
-        for (it = li.begin(); it != li.end(); ++it)
+        for (it = activeConn.begin(); it != activeConn.end(); ++it)
         {
             send(*it, buf, sizeof(buf), 0);
         }
@@ -97,25 +99,25 @@ void sendMess()
 
 int main()
 {
-    //Create the socket - ipv4 internet socket, TCP
-    s = socket(AF_INET, SOCK_STREAM, 0);
-    memset(&servaddr, 0, sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(MYPORT);
-    servaddr.sin_addr.s_addr = inet_addr(IP);
+    //Create the socket for the connection number - ipv4 internet socket, TCP
+    id = socket(AF_INET, SOCK_STREAM, 0);
+    memset(&serverAddr, 0, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(MYPORT);
+    serverAddr.sin_addr.s_addr = inet_addr(IP);
 
     //bind the socket with error checking
-    if (bind(s, (struct sockaddr *)&servaddr, sizeof(servaddr)) == -1)
+    if (bind(id, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) == -1)
     {
         perror("bind");
         exit(1);
     }
-    if (listen(s, 20) == -1)
+    if (listen(id, 20) == -1)
     {
         perror("listen");
         exit(1);
     }
-    len = sizeof(servaddr);
+    length = sizeof(serverAddr);
 
     //thread : while ==>> accpet
     thread t(getConnection);
