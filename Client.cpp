@@ -19,9 +19,6 @@
 
 using namespace std;
 
-void connect()
-{
-}
 int main(int argc, char const *argv[])
 {
     //Get your username and password
@@ -98,7 +95,7 @@ int main(int argc, char const *argv[])
                 printf("%s", recvbuf);
                 memset(recvbuf, 0, sizeof(recvbuf));
             }
-            //When the user enters the information, he begins to process the information and send it.
+            //When the user enters the information, process the information and send it.
             if (FD_ISSET(0, &rfds))
             {
                 char sendbuf[BUFFER_SIZE];
