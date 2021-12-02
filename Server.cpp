@@ -15,7 +15,7 @@
 #include <list>
 #include <mysql++/mysql++.h>
 
-#define MYPORT 7000
+#define MYPORT 8080
 #define BUFFER_SIZE 1024
 #define IP "127.0.0.1"
 
@@ -26,12 +26,22 @@ struct sockaddr_in serverAddr;
 socklen_t length;
 list<int> activeConn;
 
+mysqlpp::StoreQueryResult sendQuery(string data)
+{
+    mysqlpp::Connection myDB("cse278", "localhost", "cse278", "S3rul3z");
+    mysqlpp::Query query = myDB.query();
+    query << data;
+    query.parse();
+    return query.store();
+}
+
 void getConnection()
 {
     while (1)
     {
         int newConn = accept(id, (struct sockaddr *)&serverAddr, &length);
         activeConn.push_back(newConn);
+        cout << "New Connection: User #";
         printf("%d\n", newConn);
     }
 }
@@ -74,16 +84,34 @@ void getData()
                 char buf[BUFFER_SIZE];
                 memset(buf, 0, sizeof(buf));
                 int len = recv(*it, buf, sizeof(buf), 0);
-                
+
                 //This prints the client's message on the server terminal
                 printf("%s", buf);
+
+                //This sends the client's message to the database as a query
+                try
+                {
+                    mysqlpp::StoreQueryResult result = sendQuery(buf);
+                }
+                catch (const std::exception &e)
+                {
+                    //Catch an error
+                    cerr << e.what() << '\n';
+                    string temp = e.what();
+                    temp = temp + '\n';
+                    char buf[BUFFER_SIZE];
+                    strcpy(buf, temp.c_str());
+
+                    //Send the error back to the user
+                    send(*it, buf, sizeof(buf), 0);
+                }
             }
         }
         sleep(1);
     }
 }
 
-void sendMess()
+void sendToAll()
 {
     while (1)
     {
@@ -124,7 +152,7 @@ int main()
     t.detach();
 
     //thread : input ==>> send
-    thread t1(sendMess);
+    thread t1(sendToAll);
     t1.detach();
 
     //thread : recv ==>> show

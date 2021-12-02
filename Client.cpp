@@ -14,7 +14,7 @@
 #include <list>
 #include <iostream>
 
-#define MYPORT 7000
+#define MYPORT 8080
 #define BUFFER_SIZE 1024
 
 using namespace std;
@@ -49,6 +49,8 @@ int main(int argc, char const *argv[])
         perror("connect");
         exit(1);
     }
+
+    cout << "Connection established." << endl << "Type /exit to disconnect.\n";
 
     while (1)
     {
@@ -95,18 +97,19 @@ int main(int argc, char const *argv[])
                 printf("%s", recvbuf);
                 memset(recvbuf, 0, sizeof(recvbuf));
             }
-            //When the user enters the information, process the information and send it.
+
+            //When the user enters information, process the information and send it.
             if (FD_ISSET(0, &rfds))
             {
                 char sendbuf[BUFFER_SIZE];
                 fgets(sendbuf, sizeof(sendbuf), stdin);
-                //cout << sendbuf;
                 send(sock_cli, sendbuf, strlen(sendbuf), 0); //Send out
                 memset(sendbuf, 0, sizeof(sendbuf));
             }
         }
     }
 
+    cout << "Connection terminated.\n";
     close(sock_cli);
 
     return 0;
