@@ -19,6 +19,19 @@
 
 using namespace std;
 
+void exitPrompt()
+{
+    while (1)
+    {
+        char buf[BUFFER_SIZE];
+        fgets(buf, sizeof(buf), stdin);
+        if (buf == "/exit")
+        {
+            exit(0);
+        }
+    }
+}
+
 int main(int argc, char const *argv[])
 {
     //Get your username and password
@@ -50,7 +63,8 @@ int main(int argc, char const *argv[])
         exit(1);
     }
 
-    cout << "Connection established." << endl << "Type /exit to disconnect.\n";
+    cout << "Connection established." << endl
+         << "Type /exit to disconnect.\n";
 
     while (1)
     {
@@ -103,6 +117,17 @@ int main(int argc, char const *argv[])
             {
                 char sendbuf[BUFFER_SIZE];
                 fgets(sendbuf, sizeof(sendbuf), stdin);
+                if (sendbuf[0] == 'e' &&
+                    sendbuf[1] == 'x' &&
+                    sendbuf[2] == 'i' &&
+                    sendbuf[3] == 't')
+                {
+                    send(sock_cli, sendbuf, strlen(sendbuf), 0);
+                    cout << "Connection terminated.\n";
+                    close(sock_cli);
+                    return 0;
+                }
+
                 send(sock_cli, sendbuf, strlen(sendbuf), 0); //Send out
                 memset(sendbuf, 0, sizeof(sendbuf));
             }

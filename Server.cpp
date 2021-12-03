@@ -41,7 +41,7 @@ void getConnection()
     {
         int newConn = accept(id, (struct sockaddr *)&serverAddr, &length);
         activeConn.push_back(newConn);
-        cout << "New Connection: User #";
+        cout << "New Connection: Client #";
         printf("%d\n", newConn);
     }
 }
@@ -88,22 +88,33 @@ void getData()
                 //This prints the client's message on the server terminal
                 printf("%s", buf);
 
-                //This sends the client's message to the database as a query
-                try
+                if (buf[0] == 'e' &&
+                    buf[1] == 'x' &&
+                    buf[2] == 'i' &&
+                    buf[3] == 't')
                 {
-                    mysqlpp::StoreQueryResult result = sendQuery(buf);
+                    cout << "Client #" << *it << " disconnected.\n";
+                    activeConn.erase(it--);
                 }
-                catch (const std::exception &e)
+                else
                 {
-                    //Catch an error
-                    cerr << e.what() << '\n';
-                    string temp = e.what();
-                    temp = temp + '\n';
-                    char buf[BUFFER_SIZE];
-                    strcpy(buf, temp.c_str());
+                    try
+                    {
+                        //This sends the client's message to the database as a query
+                        mysqlpp::StoreQueryResult result = sendQuery(buf);
+                    }
+                    catch (const std::exception &e)
+                    {
+                        //Catch an error
+                        cerr << e.what() << '\n';
+                        string temp = e.what();
+                        temp = temp + '\n';
+                        char buf[BUFFER_SIZE];
+                        strcpy(buf, temp.c_str());
 
-                    //Send the error back to the user
-                    send(*it, buf, sizeof(buf), 0);
+                        //Send the error back to the user
+                        send(*it, buf, sizeof(buf), 0);
+                    }
                 }
             }
         }
